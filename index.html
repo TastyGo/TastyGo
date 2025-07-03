@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasty Go - Feed Your Cravings!</title>
+    <!-- Favicon for the browser tab -->
+    <link rel="icon" href="https://i.imgur.com/5X0Yh6K.png" type="image/png">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Import Google Fonts - Poppins for a modern, clean look */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        /* Define CSS Variables for consistent theming across the application */
+        :root {
+            --primary-color: #FF5722; /* Deep Orange - for accents, buttons, titles */
+            --secondary-color: #FFC107; /* Amber/Gold - for gradients, secondary accents */
+            --accent-color: #FF9800; /* Orange - for subtle highlights */
+            --dark-background: rgba(33, 33, 33, 0.9); /* Darker, almost black for header with blur */
+            --text-dark: #212121; /* Very dark grey/black for primary text and headings */
+            --text-light: #616161; /* Medium grey for secondary text and descriptions */
+            --white: #ffffff; /* Pure White */
+            --green-success: #4CAF50; /* Brighter Green for notifications and confirmations */
+            --red-error: #F44336; /* Brighter Red for warnings and removal actions */
+            --light-bg: #ECEFF1; /* Light grey-blue, subtle cool tone for general page background */
+            --content-bg: #FFFFFF; /* Pure white for content wrappers and cards */
+            --footer-bg: #263238; /* Dark Blue-Grey for footer background */
+        }
+
+        /* Universal Box-Sizing and Reset for consistent layout behavior */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Smooth scrolling for anchor links, enhancing user experience */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Body Styling - sets global font, background, and layout direction */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--light-bg); /* Main background color, slightly off-white */
+            min-height: 100vh; /* Ensures body takes full viewport height */
+            overflow-x: hidden; /* Prevents horizontal scrollbar */
+            color: var(--text-dark); /* Default text color */
+            display: flex;
+            flex-direction: column; /* Stacks content vertically for sticky footer */
+        }
+        
+        /* Main content area takes available space, pushing footer to bottom */
+        main {
+            flex-grow: 1;
+            padding-top: 80px; /* Space for fixed header to prevent content overlap */
+            padding-bottom: 60px; /* Space for footer */
+            min-height: calc(100vh - 140px); /* Ensure main has a minimum height */
+            position: relative; /* Needed for absolute positioning of sections */
+        }
+
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px; /* Horizontal padding for smaller screens */
+        }
+
+        /* Header Styling - fixed at top, semi-transparent with blur */
+        header {
+            background: var(--dark-background);
+            backdrop-filter: blur(12px); /* Frosted glass effect for modern look */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000; /* Ensures header is always on top */
+            padding: 15px 0;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+            transition: top 0.3s; /* Smooth hide/show on scroll (if implemented) */
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Logo Styling - combines SVG and text */
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Text shadow for readability */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        /* SVG Logo Specific Styling */
+        .logo-svg {
+            height: 40px;
+            width: 40px;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover .logo-svg {
+            transform: rotate(-15deg) scale(1.1); /* Fun hover effect for logo */
+        }
+
+        /* Navigation Links Styling */
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 35px;
+        }
+
+        .nav-links a {
+            color: var(--white); /* White text on dark header background */
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        /* Underline effect for navigation links on hover/active */
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -5px;
+            transition: width 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .nav-links a:hover::after, .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--primary-color); /* Highlight color on hover/active */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+
+        /* Cart Icon Button Styling */
+        .cart-icon {
+            background: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 50px; /* Pill shape */
+            cursor: pointer;
+            font-weight: bold;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4); /* Soft shadow */
+        }
+
+        .cart-icon:hover {
+            background: var(--secondary-color);
+            transform: scale(1.08); /* Slightly enlarge on hover */
+            box-shadow: 0 6px 20px rgba(247, 147, 30, 0.5);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--red-error); /* Red badge for count */
+            color: var(--white);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid var(--white); /* White border for contrast */
+        }
+
+        /* Hero Section Styling - full height background with content centered */
+        .hero {
+            /* Use a warm, blurred foodie image as the base background */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1517431653198-d45089304911?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* Parallax effect */
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative; /* Needed for child elements to be positioned */
+            overflow: hidden; /* Hide overflow for background effects */
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Initial shadow for glow effect */
+            animation: heroGlow 5s ease-in-out infinite alternate; /* Shimmering glow */
+            perspective: 1000px; /* Add perspective for 3D effects */
+        }
+
+        @keyframes heroGlow {
+            0% { box-shadow: 0 0 20px rgba(255,87,34,0.5), 0 0 30px rgba(255,193,7,0.3); }
+            50% { box-shadow: 0 0 40px rgba(255,87,34,0.8), 0 0 60px rgba(255,193,7,0.5); }
+            100% { box-shadow: 0 0 20px rgba(255,87,34,0.5), 0 0 30px rgba(255,193,7,0.3); }
+        }
+
+        /* Container for creative background motion effects */
+        .hero-background-effects {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Below hero-content */
+            pointer-events: none; /* Allow clicks to pass through */
+            /* Multiple animated gradients for dynamic background */
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,100,0,0.4) 0%, transparent 40%), /* Deep Orange glow */
+                radial-gradient(circle at 80% 20%, rgba(255,200,0,0.4) 0%, transparent 40%), /* Amber glow */
+                radial-gradient(circle at 50% 10%, rgba(255,150,0,0.2) 0%, transparent 50%), /* Orange accent glow */
+                radial-gradient(circle at 10% 50%, rgba(255,120,0,0.3) 0%, transparent 60%), /* Another orange glow */
+                radial-gradient(circle at 90% 90%, rgba(255,210,0,0.3) 0%, transparent 60%); /* Another amber glow */
+            background-size: 
+                300% 300%, /* First gradient */
+                350% 350%, /* Second gradient */
+                250% 250%, /* Third gradient */
+                400% 400%, /* Fourth gradient */
+                320% 320%; /* Fifth gradient */
+            background-position: 
+                0% 0%,
+                100% 100%,
+                50% 50%,
+                0% 100%,
+                100% 0%; /* Initial positions */
+            animation: 
+                gradientPan1 30s linear infinite alternate,
+                gradientPan2 35s linear infinite alternate-reverse,
+                gradientPan3 25s ease-in-out infinite,
+                gradientPan4 45s ease-out infinite alternate,
+                gradientPan5 28s linear infinite reverse;
+        }
+
+        @keyframes gradientPan1 {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+        @keyframes gradientPan2 {
+            0% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+        @keyframes gradientPan3 {
+            0% { background-position: 50% 50%; }
+            100% { background-position: 0% 100%; }
+        }
+        @keyframes gradientPan4 {
+            0% { background-position: 0% 100%; }
+            100% { background-position: 100% 0%; }
+        }
+        @keyframes gradientPan5 {
+            0% { background-position: 100% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        /* Floating food elements for 3D-like animation */
+        .floating-food-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1; /* Same as hero-background-effects, but elements will have transforms */
+            pointer-events: none;
+            overflow: hidden; /* Ensure elements don't go outside */
+        }
+
+        .floating-food-elements span {
+            position: absolute;
+            font-size: 3rem; /* Larger for visibility */
+            opacity: 0.7;
+            animation: floatAndRotate 20s infinite ease-in-out;
+            will-change: transform, opacity; /* Optimize for animation */
+        }
+
+        .floating-food-elements span:nth-child(1) {
+            top: 10%; left: 5%;
+            animation-delay: 0s;
+            animation-duration: 22s;
+            transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+        }
+        .floating-food-elements span:nth-child(2) {
+            top: 60%; left: 80%;
+            animation-delay: 5s;
+            animation-duration: 25s;
+            transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+        }
+        .floating-food-elements span:nth-child(3) {
+            top: 30%; left: 40%;
+            animation-delay: 10s;
+            animation-duration: 18s;
+            transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+        }
+        .floating-food-elements span:nth-child(4) {
+            top: 80%; left: 20%;
+            animation-delay: 3s;
+            animation-duration: 20s;
+            transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+        }
+        .floating-food-elements span:nth-child(5) {
+            top: 20%; left: 90%;
+            animation-delay: 8s;
+            animation-duration: 23s;
+            transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(1);
+        }
+
+        @keyframes floatAndRotate {
+            0% {
+                transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(0.8);
+                opacity: 0.5;
+            }
+            25% {
+                transform: translate3d(20px, -30px, 50px) rotateX(10deg) rotateY(15deg) scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translate3d(-10px, 10px, 100px) rotateX(0deg) rotateY(-10deg) scale(1.2);
+                opacity: 0.8;
+            }
+            75% {
+                transform: translate3d(30px, 20px, 50px) rotateX(-10deg) rotateY(10deg) scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) scale(0.8);
+                opacity: 0.5;
+            }
+        }
+
+        .hero-content {
+            animation: fadeIn 1s ease-out; /* Fade-in animation on load */
+            position: relative; /* Ensure content is above background effects */
+            z-index: 2; /* Higher z-index than background effects */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-content h1 {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.7); /* Stronger text shadow for impact */
+            animation: bounce 2s infinite; /* Bouncing text animation */
+            color: var(--white); /* Ensure heading is white */
+        }
+
+        .hero-content p {
+            font-size: 1.6rem;
+            margin-bottom: 40px;
+            max-width: 700px;
+            line-height: 1.6;
+            margin-left: auto;
+            margin-right: auto;
+            color: #333; /* Changed to dark grey for maximum visibility */
+            /* Significantly stronger text shadow for maximum visibility */
+            text-shadow: 
+                0 0 5px rgba(255, 255, 255, 0.9), /* White glow */
+                0 0 10px rgba(255, 255, 255, 0.7),
+                0 0 15px rgba(255, 255, 255, 0.5),
+                0 0 20px rgba(255, 255, 255, 0.3);
+            opacity: 1; /* Ensure full opacity */
+        }
+
+        /* Call to Action Button Styling */
+        .cta-button {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+            animation: pulse 2s infinite; /* Pulsing button animation */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added text shadow for buttons */
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6);
+        }
+
+        /* Keyframe animations */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-8px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4); }
+            50% { transform: scale(1.03); box-shadow: 0 15px 40px rgba(255, 107, 53, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4); }
+        }
+
+        /* Sections General Styling - ensures content areas are distinct and animated */
+        section {
+            padding: 80px 20px;
+            background-color: var(--content-bg); /* White background for content sections */
+            position: absolute; /* Use absolute positioning for overlay effect */
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100%; /* Ensure section takes full height of main */
+            opacity: 0; /* Start hidden for animation */
+            transform: translateY(20px); /* Start slightly below for animation */
+            transition: opacity 0.7s ease-out, transform 0.7s ease-out; /* Smooth transition */
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); /* Subtle shadow for sections */
+            border-radius: 15px; /* Rounded corners for sections */
+            display: none; /* Hide by default, will be shown by JS */
+            color: var(--text-dark); /* Ensure text is dark on light background */
+        }
+        
+        /* Home section is special (hero) - no extra padding/background */
+        section#home {
+            padding: 0;
+            background: none; /* Hero section has its own background */
+            opacity: 1; /* Home section always visible by default */
+            transform: translateY(0);
+            box-shadow: none; /* No shadow for hero section */
+            border-radius: 0; /* No border-radius for hero section */
+            position: relative; /* Home section is part of the normal flow */
+            display: flex; /* Ensure hero content is centered */
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+            /* Text color for hero section is now handled by individual elements */
+        }
+
+        /* Active section state - ensures the current section is fully visible */
+        section.active {
+            display: block; /* Ensures active section is displayed */
+            opacity: 1;
+            transform: translateY(0);
+            position: relative; /* Active section should take up space */
+        }
+
+        /* Section Title Styling */
+        .section-title {
+            font-size: 3.2rem;
+            text-align: center;
+            margin-bottom: 60px;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+            font-weight: 700;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+            margin: 20px auto 0;
+        }
+
+        /* Menu Grid Layout */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        /* Food Card Styling - individual menu item cards */
+        .food-card {
+            background: var(--content-bg);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08); /* Enhanced shadow for depth */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Springy transition for hover */
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
+        }
+
+        .food-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .food-image {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .food-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .food-card:hover .food-image img {
+            transform: scale(1.15); /* Zoom effect on image hover */
+        }
+
+        .food-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 50%);
+            z-index: 1;
+        }
+
+        .food-info {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .food-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .food-description {
+            color: var(--text-light);
+            margin-bottom: 15px;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+
+        .pickup-line {
+            font-style: italic;
+            color: var(--secondary-color);
+            margin: 15px 0;
+            font-weight: 500;
+            padding: 10px 0;
+            border-top: 1px dashed var(--light-bg);
+            border-bottom: 1px dashed var(--light-bg);
+        }
+
+        .food-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 15px 0;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .quantity-btn {
+            background: var(--light-bg);
+            color: var(--primary-color);
+            border: 2px solid var(--light-bg);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.4rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .quantity-btn:hover {
+            background: var(--primary-color);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+
+        .quantity-input {
+            width: 70px;
+            text-align: center;
+            border: 2px solid var(--light-bg);
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            -moz-appearance: textfield; /* Firefox specific */
+            color: var(--text-dark); /* Ensure text is dark */
+        }
+        .quantity-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2); /* Focus ring */
+        }
+
+        /* Hide spin buttons for number input in WebKit browsers */
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Add to Cart Button Styling */
+        .add-to-cart {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border: none;
+            padding: 18px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1.2rem;
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added text shadow */
+        }
+
+        .add-to-cart:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Content Wrapper for Cart, Payment, About, Contact sections */
+        .content-wrapper {
+            background: var(--content-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
+        }
+
+        /* Cart Item Styling */
+        .cart-item {
+            background: #fdfdfd; /* Slightly off-white for cart items */
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--light-bg);
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+            border-left: 5px solid var(--primary-color); /* Highlight on hover */
+        }
+        
+        .cart-item-info strong { font-size: 1.2rem; color: var(--text-dark); }
+        .cart-item-info small { color: var(--text-light); display: block; margin-top: 5px; }
+        .cart-item-actions { display: flex; align-items: center; gap: 20px; }
+        .cart-item-actions strong { font-size: 1.3rem; color: var(--primary-color); }
+
+        /* Remove Button in Cart */
+        .remove-btn {
+            background: var(--red-error);
+            color: var(--white);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1) rotate(15deg); /* Fun rotate effect */
+        }
+
+        /* Cart Summary Section */
+        .cart-summary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added text shadow */
+        }
+
+        /* Checkout Button Styling */
+        .checkout-btn {
+            background: var(--green-success);
+            color: var(--white);
+            border: none;
+            padding: 18px 35px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added text shadow */
+        }
+
+        .checkout-btn:hover {
+            background: #229954;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        /* Empty Cart Message Styling */
+        .empty-cart-message {
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--text-light);
+            padding: 50px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            border: 2px dashed var(--light-bg);
+        }
+
+        /* Payment Section Specific Styles */
+        .qr-code {
+            width: 280px;
+            height: 280px;
+            margin: 30px auto;
+            border: 5px solid var(--primary-color);
+            border-radius: 20px;
+            padding: 10px;
+            background: var(--content-bg);
+        }
+        .qr-code img { width: 100%; height: 100%; object-fit: cover; border-radius: 15px; }
+        
+        /* Form Input Fields Styling */
+        .form-input, .form-textarea, .transaction-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--light-bg);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            color: var(--text-dark); /* Ensure text is dark on light input */
+        }
+        .form-input:focus, .form-textarea:focus, .transaction-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+        .transaction-input { margin: 20px 0; }
+        .form-textarea { min-height: 150px; resize: vertical; }
+        .contact-form { display: grid; gap: 20px; margin-top: 30px; }
+
+        /* Upload Screenshot Button Styling */
+        .upload-screenshot-btn {
+            background: #3498db; /* Blue color */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added text shadow */
+        }
+        .upload-screenshot-btn:hover { background: #2980b9; transform: translateY(-2px); }
+
+        /* Success Animation Styling */
+        .success-animation { text-align: center; }
+        .success-icon { font-size: 6rem; color: var(--green-success); animation: popIn 0.8s ease-out forwards; display: inline-block; margin-bottom: 20px; }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        .success-animation h2 { font-size: 2.5rem; color: var(--green-success); margin-bottom: 15px; }
+        .success-animation p { font-size: 1.2rem; color: var(--text-light); margin-bottom: 30px; }
+
+        /* General Submit Button Styling */
+        .submit-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Added text shadow */
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--white);
+            padding: 60px 0 20px;
+        }
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+        .footer-about, .footer-links, .footer-social {
+            padding: 0 15px;
+        }
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .footer-logo img {
+            height: 35px;
+        }
+        .footer-about p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+        .footer-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 40px;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        .footer-links ul {
+            list-style: none;
+        }
+        .footer-links ul li {
+            margin-bottom: 12px;
+        }
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: var(--primary-color);
+            padding-left: 5px;
+        }
+        .social-icons {
+            display: flex;
+            gap: 15px;
+        }
+        .social-icons a {
+            color: var(--white);
+            font-size: 1.5rem;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .social-icons a:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-5px);
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            .nav-links { display: none; } /* Hide nav links on small screens */
+            .hero-content h1 { font-size: 3rem; }
+            .hero-content p { font-size: 1.2rem; }
+            .menu-grid { grid-template-columns: 1fr; } /* Single column for menu items */
+            .section-title { font-size: 2.2rem; }
+            .logo { font-size: 1.8rem; }
+            .cart-icon { padding: 10px 15px; font-size: 0.9rem; }
+            .cta-button { padding: 15px 30px; font-size: 1.1rem; }
+            .content-wrapper { padding: 25px; }
+            .footer-container { text-align: center; }
+            .footer-title::after { left: 50%; transform: translateX(-50%); } /* Center footer titles for mobile */
+            .social-icons { justify-content: center; }
+            section { padding: 40px 15px; margin-bottom: 20px; } /* Adjust section padding for mobile */
+        }
+
+        /* Chat Bubble (WhatsApp) Styling */
+        .chat-bubble {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: var(--green-success);
+            color: white;
+            border-radius: 50%;
+            width: 65px;
+            height: 65px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.8rem;
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+            animation: float 3s ease-in-out infinite; /* Floating animation */
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .chat-bubble:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.6);
+            background: #229954;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Utility class to hide elements */
+        .hidden { display: none !important; } 
+
+        /* Notification Pop-up Styling */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--green-success);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideIn 0.5s ease-out forwards, fadeOut 0.5s ease-in 2.5s forwards;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: 500;
+        }
+
+        @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(120%); } }
+    </style>
+</head>
+<body>
+    <header id="main-header">
+        <nav class="container">
+            <!-- New SVG Logo for "Tasty Go" -->
+            <a href="#home" class="logo" data-section="home">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+                    <!-- Main circle background with gradient -->
+                    <circle cx="12" cy="12" r="10" fill="url(#logoGradientCircle)"/>
+                    <!-- Stylized top bun -->
+                    <path d="M12 5C9.17 5 6.82 7.08 6.09 9.88L6 10H18L17.91 9.88C17.18 7.08 14.83 5 12 5Z" fill="#FFD700"/> <!-- Gold color for bun -->
+                    <!-- Stylized bottom bun -->
+                    <path d="M12 19C14.83 19 17.18 16.92 17.91 14.12L18 14H6L6.09 14.12C6.82 16.92 9.17 19 12 19Z" fill="#A0522D"/> <!-- Brown color for bun -->
+                    <!-- Patty -->
+                    <rect x="7" y="11" width="10" height="2" rx="1" fill="#FF4500"/> <!-- Orange-red for patty -->
+                    <!-- Lettuce -->
+                    <rect x="8" y="10" width="8" height="1" rx="0.5" fill="#32CD32"/> <!-- Green for lettuce -->
+                    <defs>
+                        <!-- Gradient for the main circle, matching primary/secondary colors -->
+                        <linearGradient id="logoGradientCircle" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#ff6b35"/>
+                            <stop offset="1" stop-color="#f7931e"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>Tasty Go</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#home" data-section="home">Home</a></li>
+                <li><a href="#menu" data-section="menu">Menu</a></li>
+                <li><a href="#about" data-section="about">About</a></li>
+                <li><a href="#contact" data-section="contact">Contact</a></li>
+            </ul>
+            <button class="cart-icon" data-section="cart">
+                🛒 Cart
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Home Section (Hero) - always active by default -->
+        <section id="home" class="hero active">
+            <!-- New div for creative background animations -->
+            <div class="hero-background-effects">
+                <!-- Floating food elements for 3D-like animation -->
+                <div class="floating-food-elements">
+                    <span style="font-size: 3.5rem;">🍔</span>
+                    <span style="font-size: 2.8rem;">🍕</span>
+                    <span style="font-size: 3.2rem;">🍟</span>
+                    <span style="font-size: 2.5rem;">🍩</span>
+                    <span style="font-size: 3rem;">🍝</span>
+                </div>
+            </div>
+            <div class="hero-content">
+                <h1>🔥 Tasty Go</h1>
+                <p>"Are you fries? 'Cause I can't stop picking you! One bite and you're mine – order now, love at first crunch!"</p>
+                <button class="cta-button" data-section="menu">👅 Feed Me Now!</button>
+            </div>
+        </section>
+
+        <!-- Menu Section -->
+        <section id="menu" class="container">
+            <h2 class="section-title">Our Delicious Menu</h2>
+            <div class="menu-grid" id="menuGrid"></div>
+        </section>
+
+        <!-- Cart Section -->
+        <section id="cart" class="container">
+            <h2 class="section-title">Your Cart</h2>
+            <div class="content-wrapper">
+                <div id="cartItems"></div>
+                <div class="cart-summary" id="cartSummary" style="display: none;">
+                    <div>Total: ₹<span id="totalAmount">0</span></div>
+                    <button class="checkout-btn" data-section="payment">💳 Proceed to Payment</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payment Section -->
+        <section id="payment" class="container">
+            <h2 class="section-title">Payment</h2>
+            <div class="content-wrapper" style="text-align: center;">
+                <h3>Scan QR Code to Pay</h3>
+                <div class="qr-code">
+                    <!-- QR Code image with fallback placeholder -->
+                    <img src="https://i.imgur.com/E5J065E.png" alt="UPI QR Code" onerror="this.onerror=null;this.src='https://placehold.co/280x280/f8f9fa/333?text=QR+Code+Unavailable';">
+                </div>
+                <p><strong>Total Amount: ₹<span id="paymentTotal">0</span></strong></p>
+                <input type="text" class="transaction-input" id="transactionId" placeholder="Enter UPI Transaction ID (Optional)">
+                <input type="file" id="screenshotUpload" accept="image/*" class="hidden">
+                <label for="screenshotUpload" class="cta-button upload-screenshot-btn" style="display: block; margin: 15px auto; max-width: 250px;">Optional: Upload Screenshot</label>
+                <div id="screenshotPreview" style="margin-top: 10px; max-width: 200px; margin-left: auto; margin-right: auto;"></div>
+                <button class="submit-btn" id="confirmPaymentBtn">✅ Confirm Payment</button>
+            </div>
+        </section>
+
+        <!-- Success Section -->
+        <section id="success" class="container">
+            <div class="content-wrapper">
+                <div class="success-animation">
+                    <div class="success-icon">🎉</div>
+                    <h2>Order Confirmed!</h2>
+                    <p>Your delicious food is on the way! We've sent your order details via WhatsApp.</p>
+                    <button class="cta-button" data-section="menu" style="margin-top: 30px;">🍕 Order More</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="container">
+            <h2 class="section-title">About Tasty Go</h2>
+            <div class="content-wrapper">
+                <p>Welcome to <strong>Tasty Go</strong>, where every bite tells a story of passion, flavor, and love! We're not just another food delivery service – we're your culinary wingman, ready to make your taste buds fall head over heels.</p>
+                <p>Born from a simple belief that great food should be accessible to everyone, Tasty Go brings you handcrafted dishes made with the finest ingredients and a generous sprinkle of love. From our kitchen to your doorstep, we ensure every meal is a celebration!</p>
+                <p>Our chefs don't just cook – they create edible art that will make you say "Where have you been all my life?" So go ahead, don't be shy, let your taste buds fall in love today!</p>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="container">
+            <h2 class="section-title">Contact Us</h2>
+            <div class="content-wrapper">
+                <p>Got questions? Cravings? Or just want to tell us how much you love our food? We're all ears!</p>
+                <form class="contact-form" id="contactForm">
+                    <input type="text" class="form-input" id="contactName" placeholder="Your Name" required>
+                    <input type="email" class="form-input" id="contactEmail" placeholder="Your Email" required>
+                    <input type="tel" class="form-input" id="contactPhone" placeholder="Your Phone Number" required>
+                    <textarea class="form-textarea" id="contactMessage" placeholder="Your Message" required></textarea>
+                    <button type="submit" class="submit-btn">🚀 Send Message</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-about">
+                <!-- Footer logo with the new SVG -->
+                <a href="#home" class="footer-logo" data-section="home">
+                    <svg width="35" height="35" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
+                        <circle cx="12" cy="12" r="10" fill="url(#logoGradientCircle)"/>
+                        <path d="M12 5C9.17 5 6.82 7.08 6.09 9.88L6 10H18L17.91 9.88C17.18 7.08 14.83 5 12 5Z" fill="#FFD700"/>
+                        <path d="M12 19C14.83 19 17.18 16.92 17.91 14.12L18 14H6L6.09 14.12C6.82 16.92 9.17 19 12 19Z" fill="#A0522D"/>
+                        <rect x="7" y="11" width="10" height="2" rx="1" fill="#FF4500"/>
+                        <rect x="8" y="10" width="8" height="1" rx="0.5" fill="#32CD32"/>
+                        <!-- Note: Gradients are defined once in the head and can be reused. -->
+                    </svg>
+                    <span>Tasty Go</span>
+                </a>
+                <p>Your daily dose of delicious, delivered fast. We're passionate about crafting unforgettable meals that bring joy with every bite.</p>
+            </div>
+            <div class="footer-links">
+                <h3 class="footer-title">Quick Links</h3>
+                <ul>
+                    <li><a href="#home" data-section="home">Home</a></li>
+                    <li><a href="#menu" data-section="menu">Menu</a></li>
+                    <li><a href="#about" data-section="about">About Us</a></li>
+                    <li><a href="#contact" data-section="contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h3 class="footer-title">Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Tasty Go. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Floating WhatsApp Chat Bubble -->
+    <div class="chat-bubble">💬</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA ---
+            const menuItems = [
+                { id: 1, name: "Cheesy Burger Delight", description: "Juicy beef patty with melted cheese, fresh lettuce, and our secret sauce.", price: 299, emoji: "🍔", pickupLine: "Are you a burger? Because you're stacked!", image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Margherita Magic", description: "Fresh mozzarella, tomatoes, and basil on our homemade pizza dough.", price: 399, emoji: "🍕", pickupLine: "You're like pizza - even when you're bad, you're still pretty good!", image: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Crispy Chicken Wings", description: "Perfectly seasoned wings with your choice of spicy or BBQ sauce.", price: 249, emoji: "🍗", pickupLine: "Wings so good, they'll make you fly!", image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Chocolate Lava Cake", description: "Warm chocolate cake with molten chocolate center and vanilla ice cream.", price: 179, emoji: "🍰", pickupLine: "Sweet like you, irresistible like us!", image: "https://images.unsplash.com/photo-1586985289936-76a03a392458?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "Loaded Nachos", description: "Crispy tortilla chips with cheese, jalapeños, and fresh guacamole.", price: 229, emoji: "🌮", pickupLine: "Nacho average snack - just like you!", image: "https://images.unsplash.com/photo-1599974538497-50c55925a07c?auto=format&fit=crop&w=800&q=80" },
+                { id: 6, name: "Creamy Pasta Paradise", description: "Fettuccine in rich alfredo sauce with grilled chicken and herbs.", price: 349, emoji: "🍝", pickupLine: "Pasta la vista, boring meals!", image: "https://images.unsplash.com/photo-1621996346565-e326b20f5451?auto=format&fit=crop&w=800&q=80" }
+            ];
+            let cart = [];
+            // IMPORTANT: Replace with your 10-digit number + country code (e.g., 91 for India)
+            const WHATSAPP_NUMBER = '910000000000'; 
+
+            // --- DOM ELEMENTS ---
+            const menuGrid = document.getElementById('menuGrid');
+            const cartCountEl = document.getElementById('cartCount');
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartSummaryContainer = document.getElementById('cartSummary');
+            const totalAmountEl = document.getElementById('totalAmount');
+            const paymentTotalEl = document.getElementById('paymentTotal');
+            
+            // --- NAVIGATION & UI ---
+            /**
+             * Shows a specific section of the page and updates navigation links.
+             * @param {string} sectionId - The ID of the section to show (e.g., 'home', 'menu').
+             * @param {boolean} isPopState - True if called from a popstate event (browser back/forward).
+             */
+            const showSection = (sectionId, isPopState = false) => {
+                if (!sectionId) sectionId = 'home'; // Default to home section
+
+                // Deactivate all sections and navigation links first
+                document.querySelectorAll('main section').forEach(s => {
+                    s.classList.remove('active');
+                    s.style.display = 'none'; // Explicitly hide non-active sections
+                });
+                document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+
+                const activeSection = document.getElementById(sectionId);
+                const activeLink = document.querySelector(`.nav-links a[data-section="${sectionId}"]`);
+
+                // Activate the selected section and link
+                if (activeSection) {
+                    activeSection.style.display = 'block'; // Ensure active section is displayed
+                    activeSection.classList.add('active');
+                    // Update payment total if navigating to payment section
+                    if (sectionId === 'payment') {
+                        paymentTotalEl.innerText = calculateTotal();
+                    }
+                }
+                if (activeLink) activeLink.classList.add('active');
+                
+                // Update browser history for back/forward navigation, avoiding duplicate entries
+                if (!isPopState && history.state?.section !== sectionId) {
+                    history.pushState({ section: sectionId }, `${sectionId}`, `#${sectionId}`);
+                }
+                window.scrollTo(0, 0); // Scroll to top of the page for new section
+            };
+
+            /**
+             * Sets up event listeners for navigation clicks and handles initial page load.
+             */
+            const setupNavigation = () => {
+                // Event listener for navigation clicks (elements with data-section attribute)
+                document.body.addEventListener('click', e => {
+                    const section = e.target.closest('[data-section]')?.dataset.section;
+                    if (section) {
+                        e.preventDefault(); // Prevent default anchor link behavior
+                        showSection(section);
+                    }
+                });
+
+                // Handle initial page load based on URL hash (e.g., #menu)
+                const hash = window.location.hash.substring(1);
+                showSection(hash || 'home', true); // 'true' indicates it's a popstate-like action
+
+                // Handle browser back/forward buttons
+                window.onpopstate = e => showSection(e.state?.section || 'home', true);
+            };
+
+            // --- RENDERING FUNCTIONS ---
+            /**
+             * Renders the menu items dynamically into the menu grid.
+             */
+            const renderMenu = () => {
+                menuGrid.innerHTML = menuItems.map(item => `
+                    <div class="food-card">
+                        <div class="food-image">
+                            <img src="${item.image}" alt="${item.name}" loading="lazy" 
+                                 onerror="this.onerror=null;this.src='https://placehold.co/800x250/f8f9fa/333?text=Image+Not+Found';">
+                        </div>
+                        <div class="food-info">
+                            <h3 class="food-name">${item.name}</h3>
+                            <p class="food-description">${item.description}</p>
+                            <p class="pickup-line">"${item.pickupLine}"</p>
+                            <div class="food-price">₹${item.price}</div>
+                            <div class="quantity-controls" data-id="${item.id}">
+                                <button class="quantity-btn decrease-qty">-</button>
+                                <input type="number" class="quantity-input" value="1" min="1" readonly>
+                                <button class="quantity-btn increase-qty">+</button>
+                            </div>
+                            <button class="add-to-cart" data-id="${item.id}">Add to Cart</button>
+                        </div>
+                    </div>
+                `).join('');
+            };
+
+            /**
+             * Renders the current items in the shopping cart.
+             */
+            const renderCart = () => {
+                updateCartCount(); // Update cart icon count
+                if (cart.length === 0) {
+                    // Display empty cart message if no items are present
+                    cartItemsContainer.innerHTML = '<p class="empty-cart-message">Your cart is empty. Add some tasty food! 😋</p>';
+                    cartSummaryContainer.style.display = 'none'; // Hide cart summary
+                    return;
+                }
+
+                // Generate HTML for each item currently in the cart
+                cartItemsContainer.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <strong>${item.name}</strong>
+                            <small>Quantity: ${item.quantity}</small>
+                        </div>
+                        <div class="cart-item-actions">
+                            <strong>₹${item.price * item.quantity}</strong>
+                            <button class="remove-btn" data-id="${item.id}">X</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                totalAmountEl.innerText = calculateTotal(); // Update total amount displayed
+                cartSummaryContainer.style.display = 'flex'; // Show cart summary
+            };
+
+            // --- CART LOGIC FUNCTIONS ---
+            /**
+             * Updates the numerical count displayed on the cart icon.
+             */
+            const updateCartCount = () => {
+                const count = cart.reduce((total, item) => total + item.quantity, 0);
+                cartCountEl.innerText = count;
+                cartCountEl.classList.toggle('active', count > 0); // Add 'active' class if count > 0 for styling
+            };
+            
+            /**
+             * Calculates the total price of all items in the cart.
+             * @returns {number} The total amount.
+             */
+            const calculateTotal = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+            /**
+             * Handles interactions within the menu grid (quantity changes, add to cart).
+             * @param {Event} e - The click event object.
+             */
+            const handleMenuInteraction = (e) => {
+                const target = e.target;
+                const card = target.closest('.food-card');
+                if (!card) return; // Exit if click is not within a food card
+
+                const id = parseInt(card.querySelector('.add-to-cart').dataset.id, 10);
+                const quantityInput = card.querySelector('.quantity-input');
+                let quantity = parseInt(quantityInput.value, 10);
+
+                if (target.matches('.increase-qty')) {
+                    quantityInput.value = ++quantity; // Increment quantity
+                } else if (target.matches('.decrease-qty')) {
+                    quantityInput.value = --quantity < 1 ? 1 : quantity; // Decrement, but not below 1
+                } else if (target.matches('.add-to-cart')) {
+                    const menuItem = menuItems.find(item => item.id === id);
+                    const existingItem = cart.find(item => item.id === id);
+                    if (existingItem) {
+                        existingItem.quantity += quantity; // Update quantity if item already in cart
+                    } else {
+                        cart.push({ ...menuItem, quantity }); // Add new item to cart
+                    }
+                    renderCart(); // Re-render cart to reflect changes
+                    showNotification(`${menuItem.name} added to cart!`); // Show success notification
+                }
+            };
+
+            /**
+             * Handles interactions within the cart (removing items).
+             * @param {Event} e - The click event object.
+             */
+            const handleCartInteraction = (e) => {
+                if (e.target.matches('.remove-btn')) {
+                    const id = parseInt(e.target.dataset.id, 10);
+                    cart = cart.filter(item => item.id !== id); // Remove item from cart array
+                    renderCart(); // Re-render cart
+                    showNotification('Item removed from cart.');
+                }
+            };
+            
+            // --- PAYMENT & MESSAGING FUNCTIONS ---
+            /**
+             * Processes the payment, generates WhatsApp order details, and clears the cart.
+             */
+            const processPayment = () => {
+                if (cart.length === 0) {
+                    showNotification("Your cart is empty! Add items before proceeding to payment.", 'error');
+                    return;
+                }
+
+                const transactionId = document.getElementById('transactionId').value;
+                const total = calculateTotal();
+                
+                // Construct WhatsApp message with detailed order information
+                let orderDetails = `*New Order from Tasty Go!* 🍔\n\n${cart.map(item => `*${item.name}* - ${item.quantity} x ₹${item.price} = ₹${item.quantity * item.price}`).join('\n')}\n\n*Total Amount:* ₹${total}\n${transactionId ? `*Transaction ID:* ${transactionId}\n` : ''}\nThank you for your order!`;
+                
+                const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello! I have a question about my order.") + encodeURIComponent(orderDetails)}`;
+                window.open(whatsappUrl, '_blank'); // Open WhatsApp chat in a new tab
+
+                // Clear cart and reset payment form fields after successful order
+                cart = [];
+                renderCart();
+                document.getElementById('transactionId').value = '';
+                document.getElementById('screenshotPreview').innerHTML = '';
+                document.getElementById('screenshotUpload').value = '';
+                
+                showSection('success'); // Navigate to the success page
+            };
+
+            /**
+             * Submits the contact form, generating a WhatsApp message with the details.
+             * @param {Event} e - The form submission event object.
+             */
+            const submitContact = (e) => {
+                e.preventDefault(); // Prevent default form submission to handle via JS
+                const form = e.target;
+                const name = form.querySelector('#contactName').value;
+                const email = form.querySelector('#contactEmail').value;
+                const phone = form.querySelector('#contactPhone').value;
+                const message = form.querySelector('#contactMessage').value;
+                
+                // Construct WhatsApp message with contact form details
+                let contactMessage = `*New Contact Message!* 💬\n\n*Name:* ${name}\n*Email:* ${email}\n*Phone:* ${phone}\n*Message:* ${message}`;
+                const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(contactMessage)}`;
+                
+                window.open(whatsappUrl, '_blank'); // Open WhatsApp chat
+                showNotification("Thank you! We'll get back to you soon.");
+                form.reset(); // Reset form fields
+            };
+
+            // --- UTILITIES ---
+            /**
+             * Displays a temporary notification message on the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of notification ('success' or 'error').
+             */
+            const showNotification = (message, type = 'success') => {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.innerText = message;
+                notification.style.background = type === 'error' ? 'var(--red-error)' : 'var(--green-success)';
+                document.body.appendChild(notification);
+                // Remove the notification after 3 seconds
+                setTimeout(() => notification.remove(), 3000);
+            };
+
+            /**
+             * Handles the display of a screenshot preview after a file is selected.
+             * @param {Event} e - The file input change event object.
+             */
+            const handleScreenshotUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('screenshotPreview').innerHTML = `<img src="${e.target.result}" alt="Screenshot Preview" style="width: 100%; border-radius: 10px;">`;
+                    }
+                    reader.readAsDataURL(file); // Read file as Data URL for image preview
+                }
+            };
+            
+            // --- INITIALIZATION ---
+            // Ensures all DOM content is loaded before running scripts
+            renderMenu(); // Render menu items on page load
+            renderCart(); // Render cart items on page load
+            setupNavigation(); // Setup navigation logic and initial section display
+            
+            // --- EVENT LISTENERS ---
+            menuGrid.addEventListener('click', handleMenuInteraction);
+            cartItemsContainer.addEventListener('click', handleCartInteraction);
+            document.getElementById('confirmPaymentBtn').addEventListener('click', processPayment);
+            document.getElementById('contactForm').addEventListener('submit', submitContact);
+            document.getElementById('screenshotUpload').addEventListener('change', handleScreenshotUpload);
+            // Event listener for the floating WhatsApp chat bubble
+            document.querySelector('.chat-bubble').addEventListener('click', () => {
+                const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hello! I have a question about my order.")}`;
+                window.open(whatsappUrl, '_blank'); // Open WhatsApp chat
+            });
+        });
+    </script>
+</body>
+</html>
