@@ -1097,8 +1097,11 @@
                 <div class="success-animation">
                     <div class="success-icon">🎉</div>
                     <h2>Order Confirmed!</h2>
-                    <!-- Simplified success message for the user -->
-                    <p>Your order has been successfully placed. Thank you for choosing Tasty Go!</p>
+                    <!-- Updated message to guide the user to send the WhatsApp message -->
+                    <p>Your order has been placed! A WhatsApp chat has opened with your order details. Please click 'Send' in WhatsApp to finalize your order with us.</p>
+                    <button class="cta-button" id="resendWhatsappBtn" style="margin-top: 20px;">
+                        <i class="fab fa-whatsapp"></i> Re-open WhatsApp
+                    </button>
                     <button class="cta-button" data-section="menu" style="margin-top: 30px;">🍕 Order More</button>
                 </div>
             </div>
@@ -1187,7 +1190,7 @@
             ];
             let cart = [];
             // IMPORTANT: Replace with your 10-digit business WhatsApp number including country code (e.g., '918765432109' for India)
-            const WHATSAPP_BUSINESS_NUMBER = '+917045562885'; 
+            const WHATSAPP_BUSINESS_NUMBER = '+910000000000'; 
 
             // --- DOM ELEMENTS ---
             const menuGrid = document.getElementById('menuGrid');
@@ -1196,6 +1199,7 @@
             const cartSummaryContainer = document.getElementById('cartSummary');
             const totalAmountEl = document.getElementById('totalAmount');
             const paymentTotalEl = document.getElementById('paymentTotal');
+            const resendWhatsappBtn = document.getElementById('resendWhatsappBtn');
             
             // --- NAVIGATION & UI ---
             /**
@@ -1391,9 +1395,26 @@
             };
 
             /**
-             * Processes the payment, sends order details to a simulated backend, and clears the cart.
+             * Generates the full WhatsApp message content string.
+             * @returns {string} The formatted WhatsApp message.
              */
-            const processPayment = async () => {
+            const generateWhatsAppMessageContent = () => {
+                const customerName = document.getElementById('customerName').value;
+                const customerPhone = document.getElementById('customerPhone').value;
+                const customerAddress = document.getElementById('customerAddress').value;
+                const transactionId = document.getElementById('transactionId').value;
+                const total = calculateTotal();
+                const timeOfOrder = getFormattedDateTime();
+
+                const orderedItems = cart.map(item => `- ${item.quantity}x ${item.name}`).join('\n');
+
+                return `✅ New Order Received!\nName: ${customerName}\nPhone: ${customerPhone}\nAddress: ${customerAddress}\n🛒 Order:\n${orderedItems}\n💳 Paid via UPI\n📌 Transaction ID: ${transactionId || 'N/A'}\n💰 Total: ₹${total}\n🕒 Time: ${timeOfOrder}`;
+            };
+
+            /**
+             * Processes the payment by opening WhatsApp for the user to send details, and clears the cart.
+             */
+            const processPayment = () => {
                 if (cart.length === 0) {
                     showNotification("Your cart is empty! Add items before proceeding to payment.", 'error');
                     return;
@@ -1402,9 +1423,6 @@
                 const customerName = document.getElementById('customerName').value;
                 const customerPhone = document.getElementById('customerPhone').value;
                 const customerAddress = document.getElementById('customerAddress').value;
-                const transactionId = document.getElementById('transactionId').value;
-                const total = calculateTotal();
-                const timeOfOrder = getFormattedDateTime();
 
                 // Basic validation for required fields
                 if (!customerName || !customerPhone || !customerAddress) {
@@ -1412,71 +1430,28 @@
                     return;
                 }
 
-                const orderedItems = cart.map(item => `- ${item.quantity}x ${item.name}`).join('\n');
+                const whatsappMessage = generateWhatsAppMessageContent();
+                const whatsappUrl = `https://wa.me/${WHATSAPP_BUSINESS_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+                
+                // Open WhatsApp chat for the user to manually send the message
+                window.open(whatsappUrl, '_blank'); 
 
-                const whatsappMessageContent = `✅ New Order Received!\nName: ${customerName}\nPhone: ${customerPhone}\nAddress: ${customerAddress}\n🛒 Order:\n${orderedItems}\n💳 Paid via UPI\n📌 Transaction ID: ${transactionId || 'N/A'}\n💰 Total: ₹${total}\n🕒 Time: ${timeOfOrder}`;
-
-                // Data to be sent to your hypothetical backend
-                const orderData = {
-                    customerName,
-                    customerPhone,
-                    customerAddress,
-                    orderedItems: cart, // Send full item objects for backend flexibility
-                    paymentMethod: 'UPI', // Hardcoded as UPI for this example
-                    transactionId,
-                    totalAmount: total,
-                    timeOfOrder,
-                    whatsappMessage: whatsappMessageContent // Include the formatted message for the backend to send
-                };
-
-                try {
-                    // Simulate sending data to a backend API endpoint
-                    // In a real application, this URL would point to your server-side API
-                    const response = await fetch('/api/send-whatsapp-order', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            // Add any necessary authentication headers (e.g., 'Authorization': 'Bearer YOUR_API_KEY')
-                        },
-                        body: JSON.stringify(orderData)
-                    });
-
-                    if (!response.ok) {
-                        // If the server response is not OK (e.g., 4xx or 5xx status)
-                        const errorText = await response.text();
-                        throw new Error(`Server responded with status ${response.status}: ${errorText}`);
-                    }
-
-                    // Simulate a successful response from the backend
-                    const result = await response.json();
-                    console.log('Order successfully sent to backend:', result);
-                    showNotification("Order confirmed! We're processing your request.");
-
-                } catch (error) {
-                    console.error('Failed to send order to backend:', error);
-                    // Fallback log: In a real app, this would store the order in a database
-                    // or send an email to the admin if WhatsApp sending failed on the server.
-                    console.warn('FALLBACK LOG: WhatsApp sending failed. Order details for manual processing:');
-                    console.warn(whatsappMessageContent); // Log the full message content
-                    showNotification("Order confirmed, but there was an issue sending details. We'll contact you shortly.", 'error');
-                } finally {
-                    // Clear cart and reset payment form fields regardless of success/failure
-                    cart = [];
-                    renderCart();
-                    document.getElementById('customerName').value = '';
-                    document.getElementById('customerPhone').value = '';
-                    document.getElementById('customerAddress').value = '';
-                    document.getElementById('transactionId').value = '';
-                    document.getElementById('screenshotPreview').innerHTML = '';
-                    document.getElementById('screenshotUpload').value = '';
-                    
-                    showSection('success'); // Always navigate to the success page for the user
-                }
+                // Clear cart and reset payment form fields
+                cart = [];
+                renderCart();
+                document.getElementById('customerName').value = '';
+                document.getElementById('customerPhone').value = '';
+                document.getElementById('customerAddress').value = '';
+                document.getElementById('transactionId').value = '';
+                document.getElementById('screenshotPreview').innerHTML = '';
+                document.getElementById('screenshotUpload').value = '';
+                
+                // Navigate to the success page for the user
+                showSection('success');
             };
 
             /**
              * Submits the contact form, generating a WhatsApp message with the details.
-             * This still opens WhatsApp for the user to send, as it's a direct contact.
              * @param {Event} e - The form submission event object.
              */
             const submitContact = (e) => {
@@ -1544,6 +1519,15 @@
                 const whatsappUrl = `https://wa.me/${WHATSAPP_BUSINESS_NUMBER}?text=${encodeURIComponent("Hello! I have a question.")}`;
                 window.open(whatsappUrl, '_blank'); // Open WhatsApp chat for generic questions
             });
+
+            // Event listener for the "Re-open WhatsApp" button on the success page
+            if (resendWhatsappBtn) {
+                resendWhatsappBtn.addEventListener('click', () => {
+                    const whatsappMessage = generateWhatsAppMessageContent(); // Regenerate message based on last cart state
+                    const whatsappUrl = `https://wa.me/${WHATSAPP_BUSINESS_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+                    window.open(whatsappUrl, '_blank');
+                });
+            }
         });
     </script>
 </body>
